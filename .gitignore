@@ -1,0 +1,24 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Diretórios de dependências
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Arquivos de sistema
+.DS_Store
+
+# Ambiente
+.env
+
+# Cache
+.cache/
+
+.next
