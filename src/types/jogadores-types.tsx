@@ -7,3 +7,11 @@ export interface JogadorRodada {
 export interface JogadoresPorNome {
   [nome: string]: JogadorRodada;
 }
+
+
+export interface SnackbarProps {
+  message: string;
+  type?: "success" | "error";
+  duration?: number;
+  onClose?: () => void;
+}

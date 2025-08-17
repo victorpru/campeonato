@@ -5,6 +5,7 @@ import { useJogadores } from "../context/jogadoresContext";
 import { jogadoresPorTime, Times } from "../constantes/times";
 import Link from "next/link";
 import { JogadoresPorNome } from "@/types/jogadores-types";
+import { useSnackbar } from "@/context/SnackbarContext";
 
 const STORAGE_KEY = "autorizadoParaCadastro";
 
@@ -12,6 +13,7 @@ export default function Cadastrar() {
   const [time, setTime] = useState<Times | "">("");
   const [rodada, setRodada] = useState<number>(1);
   const [jogadores, setJogadores] = useState<JogadoresPorNome>({});
+  const { showSnackbar } = useSnackbar();
 
   const router = useRouter();
   const { reloadJogadores } = useJogadores();
@@ -56,19 +58,18 @@ export default function Cadastrar() {
 
     try {
       await Promise.all(promessas);
-      alert("Cadastro de todos os jogadores realizado com sucesso!");
+      showSnackbar("Cadastro realizado com sucesso!", "success");
       await reloadJogadores();
       router.push("/");
     } catch (error) {
       console.error("Erro ao cadastrar jogadores:", error);
-      alert("Erro ao cadastrar, tente novamente.");
+      showSnackbar("Erro ao cadastrar, tente novamente.", "error");
     }
   }
 
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>➕ Cadastrar rodada por time</h1>
-
       <div style={styles.form}>
         <label style={styles.label}>
           Time:
@@ -83,7 +84,6 @@ export default function Cadastrar() {
             ))}
           </select>
         </label>
-
         <label style={styles.label}>
           Rodada:
           <input
@@ -94,7 +94,6 @@ export default function Cadastrar() {
             style={styles.input}
           />
         </label>
-
         {time && Object.entries(jogadores).map(([nome, data]) => (
           <div key={nome} style={styles.jogadorLinha}>
             <span style={styles.jogadorNome}>{nome}</span>
@@ -132,14 +131,12 @@ export default function Cadastrar() {
             </label>
           </div>
         ))}
-
         {time && (
           <button onClick={cadastrarTodos} style={styles.button}>
             Cadastrar todos
           </button>
         )}
       </div>
-
       <br />
       <Link href="/" style={styles.link}>
         ← Voltar para tabela
