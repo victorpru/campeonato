@@ -17,7 +17,7 @@ export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
 
     const showSnackbar = (message: string, type: "success" | "error" = "success") => {
         setSnackbar({ message, type });
-        setTimeout(() => setSnackbar(null), 3000);
+        setTimeout(() => setSnackbar(null), 5000);
     };
 
     return (
