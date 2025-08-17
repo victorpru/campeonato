@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useJogadores } from "../context/jogadoresContext";
+import { TrophyIcon } from "@phosphor-icons/react";
 
 export default function Home() {
   const { jogadores, rodadas } = useJogadores();
@@ -12,6 +13,7 @@ export default function Home() {
         time: string;
         notasPorRodada: Record<number, number>;
         goleiro: boolean;
+        gols: number;
       }
     >
   >((acc, jogador) => {
@@ -20,6 +22,7 @@ export default function Home() {
         nome: jogador.nome,
         time: jogador.time,
         notasPorRodada: {},
+        gols: jogador.gols,
         goleiro: jogador.goleiro ?? false,
       };
     }
@@ -53,11 +56,16 @@ export default function Home() {
     <div style={styles.container}>
       <h1 style={styles.title}>🏆 Campeonato Água Viva</h1>
 
-      <Link href="/cadastrar" style={styles.button}>
-        ➕ Cadastrar nova rodada
-      </Link>
+      <div style={styles.buttonsWrapper}>
+        <Link href="/cadastrar" style={styles.button}>
+          ➕ Cadastrar nova rodada
+        </Link>
+        <Link href="/rodada" style={styles.buttonWithIcon}>
+          <TrophyIcon size={20} weight="bold" />
+          Jogadores da rodada
+        </Link>
+      </div>
 
-      {/* Tabela jogadores normais */}
       <h2 style={styles.subtitle}>Jogadores</h2>
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
@@ -70,6 +78,7 @@ export default function Home() {
                   Rodada {rodada}
                 </th>
               ))}
+              <th style={styles.th}>Gols</th>
               <th style={styles.th}>Média</th>
             </tr>
           </thead>
@@ -81,21 +90,22 @@ export default function Home() {
                   key={i}
                   style={
                     isTop4
-                      ? { ...styles.rowHighlight }
+                      ? styles.rowHighlight
                       : i % 2 === 0
-                      ? styles.rowEven
-                      : styles.rowOdd
+                        ? styles.rowEven
+                        : styles.rowOdd
                   }
                 >
                   <td style={isTop4 ? styles.tdHighlight : styles.td}>{jogador.nome}</td>
                   <td style={isTop4 ? styles.tdHighlight : styles.td}>{jogador.time}</td>
                   {rodadas.map((rodada) => (
                     <td key={rodada} style={isTop4 ? styles.tdHighlight : styles.td}>
-                      {jogador.notasPorRodada[rodada] !== undefined
-                        ? jogador.notasPorRodada[rodada].toFixed(2)
-                        : ""}
+                      {jogador.notasPorRodada[rodada]?.toFixed(2) ?? ""}
                     </td>
                   ))}
+                  <td style={isTop4 ? styles.tdHighlightBold : styles.tdBold}>
+                    {jogador.gols}
+                  </td>
                   <td style={isTop4 ? styles.tdHighlightBold : styles.tdBold}>
                     {jogador.media.toFixed(2)}
                   </td>
@@ -105,6 +115,7 @@ export default function Home() {
           </tbody>
         </table>
       </div>
+
       <h2 style={styles.subtitle}>Goleiros</h2>
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
@@ -128,23 +139,17 @@ export default function Home() {
                   key={i}
                   style={
                     isMelhorGoleiro
-                      ? { ...styles.rowHighlight }
+                      ? styles.rowHighlight
                       : i % 2 === 0
-                      ? styles.rowEven
-                      : styles.rowOdd
+                        ? styles.rowEven
+                        : styles.rowOdd
                   }
                 >
-                  <td style={isMelhorGoleiro ? styles.tdHighlight : styles.td}>
-                    {jogador.nome}
-                  </td>
-                  <td style={isMelhorGoleiro ? styles.tdHighlight : styles.td}>
-                    {jogador.time}
-                  </td>
+                  <td style={isMelhorGoleiro ? styles.tdHighlight : styles.td}>{jogador.nome}</td>
+                  <td style={isMelhorGoleiro ? styles.tdHighlight : styles.td}>{jogador.time}</td>
                   {rodadas.map((rodada) => (
                     <td key={rodada} style={isMelhorGoleiro ? styles.tdHighlight : styles.td}>
-                      {jogador.notasPorRodada[rodada] !== undefined
-                        ? jogador.notasPorRodada[rodada].toFixed(2)
-                        : ""}
+                      {jogador.notasPorRodada[rodada]?.toFixed(2) ?? ""}
                     </td>
                   ))}
                   <td style={isMelhorGoleiro ? styles.tdHighlightBold : styles.tdBold}>
@@ -162,7 +167,7 @@ export default function Home() {
 
 const styles = {
   container: {
-    maxWidth: 1000,
+    width: 1100,
     margin: "40px auto",
     padding: "0 20px",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -180,6 +185,12 @@ const styles = {
     fontSize: 22,
     color: "#0070f3",
   },
+  buttonsWrapper: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 20,
+  },
   button: {
     display: "inline-block",
     backgroundColor: "#0070f3",
@@ -187,7 +198,19 @@ const styles = {
     padding: "10px 18px",
     borderRadius: 6,
     textDecoration: "none",
-    marginBottom: 20,
+    fontWeight: "600",
+    transition: "background-color 0.3s ease",
+    textAlign: "center" as const,
+  },
+  buttonWithIcon: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#0070f3",
+    color: "white",
+    padding: "10px 18px",
+    borderRadius: 6,
+    textDecoration: "none",
     fontWeight: "600",
     transition: "background-color 0.3s ease",
   },
@@ -208,15 +231,18 @@ const styles = {
     textAlign: "center" as const,
     fontWeight: "600",
     borderBottom: "2px solid #005bb5",
+    borderRight: "1px solid #ccc", // adiciona linha separando colunas
   },
   td: {
     padding: "10px 15px",
     textAlign: "center" as const,
+    borderRight: "1px solid #ccc", // adiciona linha separando colunas
   },
   tdBold: {
     padding: "10px 15px",
     textAlign: "center" as const,
     fontWeight: "bold",
+    borderRight: "1px solid #ccc",
   },
   rowEven: {
     backgroundColor: "#f9f9f9",
@@ -232,11 +258,13 @@ const styles = {
     padding: "10px 15px",
     textAlign: "center" as const,
     color: "#fff",
+    borderRight: "1px solid #ccc",
   },
   tdHighlightBold: {
     padding: "10px 15px",
     textAlign: "center" as const,
     fontWeight: "bold",
     color: "#fff",
+    borderRight: "1px solid #ccc",
   },
 };

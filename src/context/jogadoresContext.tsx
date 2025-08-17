@@ -13,6 +13,7 @@ export interface JogadorRodada {
   rodada: number;
   time: string;
   goleiro?: boolean;
+  gols: number;
 }
 
 interface JogadoresContextData {

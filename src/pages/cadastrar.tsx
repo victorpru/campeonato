@@ -4,13 +4,14 @@ import { useRouter } from "next/router";
 import { useJogadores } from "../context/jogadoresContext";
 import { jogadoresPorTime, Times } from "../constantes/times";
 import Link from "next/link";
+import { JogadoresPorNome } from "@/types/jogadores-types";
 
 const STORAGE_KEY = "autorizadoParaCadastro";
 
 export default function Cadastrar() {
   const [time, setTime] = useState<Times | "">("");
   const [rodada, setRodada] = useState<number>(1);
-  const [jogadores, setJogadores] = useState<{ [nome: string]: { nota: string; goleiro: boolean } }>({});
+  const [jogadores, setJogadores] = useState<JogadoresPorNome>({});
 
   const router = useRouter();
   const { reloadJogadores } = useJogadores();
@@ -32,9 +33,9 @@ export default function Cadastrar() {
     if (time) {
       const nomes = jogadoresPorTime[time] || [];
       const inicial = nomes.reduce((acc, nome) => {
-        acc[nome] = { nota: "0", goleiro: false };
+        acc[nome] = { nota: "0", goleiro: false, gols: 0 };
         return acc;
-      }, {} as { [nome: string]: { nota: string; goleiro: boolean } });
+      }, {} as JogadoresPorNome);
       setJogadores(inicial);
     }
   }, [time]);
@@ -45,11 +46,11 @@ export default function Cadastrar() {
       return;
     }
 
-    const promessas = Object.entries(jogadores).map(([nome, { nota, goleiro }]) => {
+    const promessas = Object.entries(jogadores).map(([nome, { nota, goleiro, gols }]) => {
       const notaNumber = parseFloat(nota.replace(",", "."));
       return axios.post(
-        "https://sistema-fut-ibav-default-rtdb.firebaseio.com/jogadores.json",
-        { nome, time, rodada, nota: isNaN(notaNumber) ? 0 : notaNumber, goleiro }
+        "https://campeonato-teste-default-rtdb.firebaseio.com/jogadores.json",
+        { nome, time, rodada, nota: isNaN(notaNumber) ? 0 : notaNumber, goleiro, gols }
       );
     });
 
@@ -95,8 +96,8 @@ export default function Cadastrar() {
         </label>
 
         {time && Object.entries(jogadores).map(([nome, data]) => (
-          <div key={nome} style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 6 }}>
-            <span style={{ flex: 1 }}>{nome}</span>
+          <div key={nome} style={styles.jogadorLinha}>
+            <span style={styles.jogadorNome}>{nome}</span>
             <input
               type="number"
               value={data.nota}
@@ -104,14 +105,30 @@ export default function Cadastrar() {
               style={styles.input}
               onChange={(e) => setJogadores(prev => ({ ...prev, [nome]: { ...prev[nome], nota: e.target.value } }))}
             />
-            <label style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <label style={styles.labelInline}>
+              Gols
+              <input
+                type="number"
+                value={data.gols}
+                min={0}
+                step={1}
+                style={styles.input}
+                onChange={(e) =>
+                  setJogadores(prev => ({
+                    ...prev,
+                    [nome]: { ...prev[nome], gols: Math.floor(Number(e.target.value)) }
+                  }))
+                }
+              />
+            </label>
+            <label style={styles.labelInline}>
               Goleiro
               <input
                 type="checkbox"
                 checked={data.goleiro}
                 onChange={(e) => setJogadores(prev => ({ ...prev, [nome]: { ...prev[nome], goleiro: e.target.checked } }))}
                 style={styles.checkbox}
-                />
+              />
             </label>
           </div>
         ))}
@@ -133,7 +150,7 @@ export default function Cadastrar() {
 
 const styles = {
   container: {
-    maxWidth: 400,
+    maxWidth: 600,
     margin: "40px auto",
     padding: "0 20px",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -148,14 +165,15 @@ const styles = {
   form: {
     display: "flex",
     flexDirection: "column" as const,
-    gap: 15,
+    gap: 10,
   },
   label: {
     display: "flex",
     flexDirection: "column" as const,
     fontWeight: "600",
     fontSize: 14,
-    color: "#ddd",
+    color: "#333",
+    marginTop: 6,
   },
   select: {
     marginTop: 6,
@@ -197,5 +215,19 @@ const styles = {
     color: "#0070f3",
     textDecoration: "none",
     fontWeight: "600",
+  },
+  jogadorLinha: {
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
+    marginTop: 6,
+  },
+  jogadorNome: {
+    flex: 1,
+  },
+  labelInline: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
   },
 };
